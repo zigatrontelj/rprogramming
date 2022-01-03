@@ -1,0 +1,42 @@
+---
+title: "lesson1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+#With curly brackets it automatically prints it
+```{r}
+x <- seq(1:10)
+(y <- x*10
+)
+```
+
+#Code is not printed, only the results
+```{r echo=FALSE}
+data <- tibble(x,y)
+```
+
+```{r}
+Score <- c(93, 63, 39, 90, 44, 42, 95, 76, 96, 34, 63, 69, 89, 47, 70, 67, 70, 67, 37, 69, 34,37,39,42,44,47,63,63,67,67,69,69,70,70,76,89,90,93,95,96)
+Grade <- c(10,7,5,9,5,5,10,8,10,5,7,8,9,5,7,7,7,7,5,7,5,5,5,5,5,5,7,7,7,7,7,7,7,8,8,9,9,10,10,10)
+
+mydata <- tibble(Score, Grade)
+
+mean(mydata$Grade)
+
+mydata %>% 
+  summarize(across(.cols = everything(), list(mean = mean, mode = mode, med = median, min = min, max = max)))
+
+library(rstatix)
+
+get_summary_stats(mydata, type = "common")
+
+get_summary_stats(mydata, type = "five_number")
+
+get_summary_stats(mydata, type = "mean_ci")
+```
+
