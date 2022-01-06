@@ -1,0 +1,188 @@
+---
+title: "IMB 2022 L2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rstatix)
+```
+
+
+```{r}
+(financial_literacy <- read_csv("~/Downloads/tax_literacy_youth.csv")
+)
+
+ggplot(financial_literacy) + 
+  aes(x = Tax_avoidance) +
+  geom_bar()
+
+ggplot(financial_literacy) + 
+  aes(x = age, fill = as.factor(Tax_avoidance)) +
+  geom_bar()
+
+financial_literacy <- financial_literacy %>%
+  mutate(age_class = cut(age, breaks = seq(9, 21, by = 3)))
+
+ggplot(financial_literacy) + 
+  aes(x = age_class, fill = as.factor(Tax_avoidance)) +
+  geom_bar()
+
+ggplot(financial_literacy) + 
+  aes(x = age_class, fill = as.factor(Tax_avoidance)) +
+  geom_bar(position = "dodge")
+
+```
+#Pie chart
+
+```{r}
+(mydata <- financial_literacy %>% 
+  count(Tax_avoidance)  %>%  
+   mutate(prop = round(n/sum(n)*100, digits = 1)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop)
+)
+
+ggplot(mydata, aes(x = "", y = prop, fill = Tax_avoidance)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) + 
+  geom_text(aes(y = lab.ypos, label = prop), color = "white")
+```
+
+```{r}
+ggplot(financial_literacy) + 
+  aes(x = age, fill = as.factor(Tax_avoidance)) +
+  geom_histogram(binwidth = 1)
+```
+
+```{r}
+head(Seatbelts)
+
+Seatbelts1 <- data_frame(as.data.frame(Seatbelts), date=time(Seatbelts), year = trunc(time(Seatbelts)), month = (time(Seatbelts) - trunc(time(Seatbelts))+1/12)*12 )
+
+ggplot(Seatbelts1, aes(x=date, y = DriversKilled), color = Law) + 
+  geom_line()
+
+Seatbelts1 %<%
+  group_by(year) %>%
+```
+
+
+```{r}
+(financial_literacy <- read_csv("~/Downloads/tax_literacy_youth.csv")
+)22
+
+ggplot(financial_literacy) + 
+  aes(x = Tax_avoidance) +
+  geom_bar()
+
+
+(mytable <- financial_literacy %>% 
+    count(age) 
+)
+
+ggplot(financial_literacy) + 
+  aes(x = age) +
+  geom_bar() 
+
+ggplot(financial_literacy) + 
+  aes(x = age) +
+  geom_bar()  + 
+  coord_flip()
+
+ggplot(financial_literacy) + 
+  aes(x = age, fill = as.factor(Tax_avoidance)) + 
+  geom_bar()
+
+mydata <- financial_literacy %>% 
+  mutate(age_class = cut(age, breaks = seq(10,22, by = 3)))
+
+ggplot(mydata) + 
+  aes(x = age_class, fill = as.factor(Tax_avoidance)) + 
+  geom_bar()
+
+ggplot(mydata) + 
+  aes(x = age_class, fill = as.factor(Tax_avoidance)) + 
+  geom_bar(position = 'fill')         
+         
+```
+
+```{r}
+
+(mydata <- financial_literacy %>% 
+  count(Tax_avoidance)  %>%  
+   mutate(prop = round(n/sum(n)*100, digits = 1)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop)
+)
+
+ggplot(mydata, aes(x = "", y = prop, fill = Tax_avoidance)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) + 
+  geom_text(aes(y = lab.ypos, label = prop), color = "white")
+
+
+```
+
+```{r}
+
+ggplot(financial_literacy) + 
+  aes(x = age) +
+  geom_histogram(binwidth = 1) 
+
+```
+## a)	Show the time series of drivers killed
+
+```{r}
+head(Seatbelts)
+
+ggplot(as.data.frame(Seatbelts), aes(x=time(Seatbelts), y = DriversKilled), color = factor(Law)) + 
+  geom_line() 
+
+Seatbelts1 <- data_frame(as.data.frame(Seatbelts), date=time(Seatbelts), year = trunc(time(Seatbelts)), month = (time(Seatbelts) - trunc(time(Seatbelts))+1/12)*12 )
+
+
+ggplot(Seatbelts1, aes(x=date, y = DriversKilled), color = Law) + 
+  geom_line()
+```
+
+## b)	Summarize the time series on a yearly level and display the time series
+
+```{r}
+Seatbelts1 %>%
+  group_by(year) %>%
+  summarize(sum = sum(DriversKilled, na.rm=T)) %>%
+  ggplot() +
+    geom_line(aes(x=year, y=sum, group=1))
+```
+```{r}
+mpg
+ggplot(mpg) +
+  aes(x = displ, y = hwy, color = drv, size = cyl) + 
+  geom_point()
+```
+
+
+
+```{r}
+
+(mydata <- financial_literacy %>% 
+   mutate(interest = Slo_taxes + World_taxes + Tax_avoidance + Tax_havens)
+)
+ggplot(mydata) + 
+  aes(x = age, y = interest) +
+  geom_point()
+
+```
+```{r}
+ggplot(mpg) + 
+  aes(x = displ, y = hwy) + 
+  geom_point()
+
+ggplot(mpg) + 
+  aes(x = displ, y = hwy, color = drv) + 
+  geom_point()
+
+ggplot(mpg, aes(x = displ, y = hwy, size = cyl, color = drv)) +
+       geom_point()
+```
+
