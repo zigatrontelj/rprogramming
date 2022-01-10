@@ -1,0 +1,33 @@
+---
+title: "lessonx"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+(storks_and_newborns <- read_csv("~/Downloads/storks_and_newborns.csv"))
+
+ggplot(storks_and_newborns) +
+  aes(x = storks, y = babies) +
+  geom_point() +
+  geom_smooth(methos = "lm", formula = y ~ x, se = F)
+
+(reg1 <- lm(data = storks_and_newborns, formula = babies ~ storks))
+
+summary(reg1)
+
+future <- data.frame(storks = c(10, 100))
+
+predict(reg1, future)
+```
+
+```{r}
+#I isolates or insulates the contents of I( ... ) from the gaze of R's formula parsing code. It allows the standard R operators to work as they would if you used them outside of a formula, rather than being treated as special formula operators.
+(reg2 <- lm(data = storks_and_newborns, formula = babies ~ storks + I(year - 1983)))
+
+summary(reg2)
+```
+
