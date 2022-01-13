@@ -1,0 +1,70 @@
+---
+title: "lessonx"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+
+mydata <- mtcars %>%
+  mutate(fuel = 100 * 3.785 / 1.61 / mpg) %>%
+  select(!mpg)
+
+mydata
+
+reg1 <- lm(data = mydata, fuel ~ wt + disp)
+
+summary(reg1)
+```
+
+```{r}
+reg2 <- lm(data = mydata, fuel ~ wt + disp + cyl)
+
+summary(reg2)
+```
+
+```{r}
+reg_full <- lm(data = mydata, fuel ~ .) #To include all variables in regression use .
+summary(reg_full)
+```
+
+
+```{r}
+#multicolinearity
+library(mctest)
+
+mctest(reg_full)
+imcdiag(reg_full)
+```
+
+```{r}
+library(olsrr)
+
+#Backward elimination
+
+#(olsrr::ols_step_backward_p(reg_full))
+
+(bkw_reg <- olsrr::ols_step_backward_p(reg_full))
+plot(bkw_reg)
+
+reg_best <- bkw_reg$model
+summary(reg_best)
+```
+```{r}
+library(olsrr)
+
+#Forward selection
+
+#(olsrr::ols_step_backward_p(reg_full))
+
+(fwd_reg <- olsrr::ols_step_forward_p(reg_full))
+plot(fwd_reg)
+
+reg_best <- fwd_reg$model
+summary(reg_best)
+```
+ 
