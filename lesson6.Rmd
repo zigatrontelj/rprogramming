@@ -1,0 +1,36 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+(myPCAdata <- mtcars %>% 
+  select(!c(vs, am)))
+
+describe(myPCAdata)
+cortest.bartlett(myPCAdata)
+
+KMO(myPCAdata)
+fap <- fa.parallel(myPCAdata, fa = "pc")
+
+(myPCA <-  principal(myPCAdata, nfactors = fap$ncomp, rotate = "none"))
+
+print.psych(myPCA, sort = TRUE, cut = .4)
+```
+```{r}
+myPCAdata1 = read.csv("https://www.dropbox.com/s/3ea9f117nf533ek/NBA2020_21_player_stats.csv?dl=1") %>% 
+  select(contains("percent"), MP, BLK, AST, PTS, STL) %>% 
+  select(!ThreePpercent, !FTpercent)
+
+KMO(myPCAdata1)
+fap <- fa.parallel(myPCAdata1, fa = "pc")
+
+(myPCA <-  principal(myPCAdata1, nfactors = fap$ncomp, rotate = "none"))
+
+print.psych(myPCA, sort = TRUE, cut = .4)
+```
+
