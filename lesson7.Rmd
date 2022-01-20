@@ -1,0 +1,41 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(psych)
+library(tidyverse)
+library(GPArotation)
+
+carValue = read.csv("~/Downloads/CarValue.csv") %>% 
+  select(!Safety, Exterior_Looks)
+
+carValue
+
+KMO(carValue)
+
+sortfap <- fa.parallel(carValue, fa = "both")
+
+fa.cv <- fa(carValue, nfactors = fap$nfact, rotate = "oblimin")
+print.psych(fa.cv, sort = T, cut = .4)
+
+describe(fa.cv$scores)
+
+cv.scales <- carValue %>% 
+  mutate(lifetime_costs = (Resale_Value + Price + Maintenance)/3) #transmute only keeps the new variable
+
+cv.scales
+
+lifetime_costs <- carValue %>% 
+  select(Resale_Value, Price, Maintenance)
+
+psych::alpha(lifetime_costs)
+
+
+```
+
