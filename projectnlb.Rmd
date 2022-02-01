@@ -1,0 +1,34 @@
+---
+title: "testproject"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(psych)
+
+initial.data <- read.table("~/Desktop/anketa1.csv", header=TRUE, sep=";", dec=",", na.strings=c("-2", "-3", "-4", "-5"))
+
+select1 <- initial.data %>%
+  select(Q20, Q1, Q2a, Q2b, Q2c, Q2d, Q2e, Q2f, Q2g, Q2h, Q2i, Q2j) %>% 
+  mutate(Q20=replace(Q20, Q20 == -1, 1)) %>% 
+  mutate(Q2a=replace(Q2a, Q2a == -1, 1)) %>% 
+  mutate(Q2b=replace(Q2b, Q2b == -1, 1)) %>% 
+  mutate(Q2c=replace(Q2c, Q2c == -1, 1)) %>% 
+  mutate(Q2d=replace(Q2d, Q2d == -1, 1)) %>% 
+  mutate(Q2e=replace(Q2e, Q2e == -1, 1)) %>% 
+  mutate(Q2f=replace(Q2f, Q2f == -1, 1)) %>% 
+  mutate(Q2g=replace(Q2g, Q2g == -1, 1)) %>% 
+  mutate(Q2h=replace(Q2h, Q2h == -1, 1)) %>% 
+  mutate(Q2i=replace(Q2i, Q2i == -1, 1)) %>% 
+  mutate(Q2j=replace(Q2j, Q2j == -1, 1)) %>% 
+  drop_na()
+
+select1
+
+```
+
