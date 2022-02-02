@@ -12,7 +12,7 @@ library(tidyverse)
 library(psych)
 library(ggplot2)
 
-initial.data <- read.table("~/Desktop/anketaFinal.csv", header=TRUE, sep=";", dec=",", na.strings=c("-2", "-3", "-4", "-5"))
+initial.data <- read.table("~/Desktop/IMB/multivariateAnalysis/rprogramming/anketaFinal.csv", header=TRUE, sep=";", dec=",", na.strings=c("-2", "-3", "-4", "-5"))
 
 select1 <- initial.data %>%
   select(Q20, Q1, Q2a, Q2b, Q2c, Q2d, Q2e, Q2f, Q2g, Q2h, Q2i, Q2j) %>% 
@@ -31,7 +31,7 @@ select1 <- initial.data %>%
 
 select1$Q20Factor <- factor(select1$Q20,
                             levels = c(1:14),
-                            labels = c("Primary", "Primary", "Primary", "Primary", "Secondary", "Secondary", "Secondary", "Secondary", "Terciar", "Terciar", "Terciar", "Terciar",  "Terciar",  "Terciar"))
+                            labels = c("Primarni", "Primarni", "Sekundarni", "Sekundarni", "Sekundarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni",  "Terciarni",  "Terciarni"))
 
 select1$Q2aFactor <- factor(select1$Q2a,
                             levels = c(1:5),
@@ -72,38 +72,74 @@ select1$Q2iFactor <- factor(select1$Q2i,
 print("Recikliranje:")
 (recikliranje <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2aFactor)))
 chisq.test(select1$Q20Factor, select1$Q2aFactor, correct = TRUE)
+recikliranjedf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2aFactor)
+ggplot(recikliranjedf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 
 print("Uporaba okolju prijaznih materialov:")
 (okolje <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2bFactor)))
 chisq.test(select1$Q20Factor, select1$Q2bFactor, correct = TRUE)
+okoljedf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2bFactor)
+ggplot(okoljedf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 
 print("Zmanjšanje porabe elektrike:")
 (energija <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2cFactor)))
 chisq.test(select1$Q20Factor, select1$Q2cFactor, correct = TRUE)
+energijadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2cFactor)
+ggplot(energijadf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 
 print("Zmanjšanje porabe pitne vode:")
 (voda <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2dFactor)))
 chisq.test(select1$Q20Factor, select1$Q2dFactor, correct = TRUE)
+vodadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2dFactor)
+ggplot(vodadf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 
 print("Zmanjšanje emisij CO2:")
 (emisij <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2eFactor)))
 chisq.test(select1$Q20Factor, select1$Q2eFactor, correct = TRUE)
+emisijdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
+ggplot(emisijdf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 
 print("Uporaba obnovljivih virov energije:")
 (virov <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2fFactor)))
 chisq.test(select1$Q20Factor, select1$Q2fFactor, correct = TRUE)
+virovdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
+ggplot(virovdf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 
 print("Brezpapirno poslovanje:")
 (brezpap <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2gFactor)))
 chisq.test(select1$Q20Factor, select1$Q2gFactor, correct = TRUE)
+brezpapdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
+ggplot(brezpapdf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 
 print("Delo od doma:")
 (doma <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2hFactor)))
 chisq.test(select1$Q20Factor, select1$Q2hFactor, correct = TRUE)
+domadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
+ggplot(domadf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 
 print("Car sharing:")
 (carsh <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2iFactor)))
 chisq.test(select1$Q20Factor, select1$Q2iFactor, correct = TRUE)
+carshdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
+ggplot(carshdf, aes(x=sector, y=duration)) + 
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1)
 ```
 
 
