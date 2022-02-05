@@ -75,7 +75,7 @@ select1$Q2iFactor <- factor(select1$Q2i,
 
 # Recikliranje
 
-```{r echo = FALSE, warning = FALSE}
+```{r}
 (recikliranje <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2aFactor)))
 recikliranjedf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2aFactor)
 recikliranjedf <- recikliranjedf %>% drop_na()
@@ -91,17 +91,16 @@ ggplot(recikliranjedfgroup, aes(x=sector, y=duration)) +
     vjust = 2,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(recikliranjedf)))
 
 fisher.test(select1$Q20Factor, select1$Q2aFactor)
-
-vectorLength = nrow(recikliranjedf)
-cat("Number of responses :", vectorLength)
 ```
 
 # Uporaba okolju prijaznih materialov
 
-```{r echo = FALSE, warning = FALSE}
+```{r}
 (okolje <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2bFactor)))
 okoljedf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2bFactor)
 okoljedf <- okoljedf %>% drop_na()
@@ -118,7 +117,9 @@ ggplot(okoljedfgroup, aes(x=sector, y=duration)) +
     vjust = 3,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(okoljedf)))
 
 fisher.test(select1$Q20Factor, select1$Q2bFactor)
 
@@ -128,8 +129,8 @@ cat("Number of responses :", vectorLength)
 
 # Zmanjšanje porabe elektrike
 
-```{r echo = FALSE, warning = FALSE}
-(energija <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2dFactor)))
+```{r}
+(energija <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2cFactor)))
 energijadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2cFactor)
 energijadf <- energijadf %>% drop_na()
 energijadfgroup <- energijadf %>% 
@@ -145,9 +146,11 @@ ggplot(energijadfgroup, aes(x=sector, y=duration)) +
     vjust = 2,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(energijadf)))
 
-fisher.test(select1$Q20Factor, select1$Q2dFactor)
+fisher.test(select1$Q20Factor, select1$Q2cFactor)
 
 vectorLength = nrow(energijadf)
 cat("Number of responses :", vectorLength)
@@ -155,7 +158,7 @@ cat("Number of responses :", vectorLength)
 
 # Zmanjšanje porabe pitne vode
 
-```{r echo = FALSE, warning = FALSE}
+```{r}
 (voda <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2dFactor)))
 vodadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2dFactor)
 vodadf <- vodadf %>% drop_na()
@@ -169,10 +172,12 @@ ggplot(vodadfgroup, aes(x=sector, y=duration)) +
   scale_size_area(max_size = 20, guide = FALSE) +
   geom_text(aes(
     y = as.numeric(as.factor(duration)) - count/34, label = count),
-    vjust = 2,
+    vjust = 3,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(vodadf)))
 
 fisher.test(select1$Q20Factor, select1$Q2dFactor)
 
@@ -182,7 +187,7 @@ cat("Number of responses :", vectorLength)
 
 # Zmanjšanje emisij CO2
 
-```{r echo = FALSE, warning = FALSE}
+```{r}
 (emisij <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2eFactor)))
 emisijdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
 emisijdf <- emisijdf %>% drop_na()
@@ -199,7 +204,9 @@ ggplot(emisijdfgroup, aes(x=sector, y=duration)) +
     vjust = 2,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(emisijdf)))
 
 fisher.test(select1$Q20Factor, select1$Q2eFactor)
 
@@ -209,7 +216,7 @@ cat("Number of responses :", vectorLength)
 
 # Uporaba obnovljivih virov energije
 
-```{r echo = FALSE, warning = FALSE}
+```{r}
 (virov <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2fFactor)))
 virovdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2fFactor)
 virovdf <- virovdf %>% drop_na()
@@ -223,10 +230,12 @@ ggplot(virovdfgroup, aes(x=sector, y=duration)) +
   scale_size_area(max_size = 20, guide = FALSE) +
   geom_text(aes(
     y = as.numeric(as.factor(duration)) - count/34, label = count),
-    vjust = 2,
+    vjust = 3,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(virovdf)))
 
 fisher.test(select1$Q20Factor, select1$Q2fFactor)
 
@@ -236,7 +245,7 @@ cat("Number of responses :", vectorLength)
 
 # Brezpapirno poslovanje
 
-```{r echo = FALSE, warning = FALSE}
+```{r}
 (brezpap <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2gFactor)))
 brezpapdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2gFactor)
 brezpapdf <- brezpapdf %>% drop_na()
@@ -250,10 +259,12 @@ ggplot(brezpapdfgroup, aes(x=sector, y=duration)) +
   scale_size_area(max_size = 20, guide = FALSE) +
   geom_text(aes(
     y = as.numeric(as.factor(duration)) - count/34, label = count),
-    vjust = 2,
+    vjust = 3,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(brezpapdf)))
 
 fisher.test(select1$Q20Factor, select1$Q2gFactor)
 
@@ -263,7 +274,7 @@ cat("Number of responses :", vectorLength)
 
 # Delo od doma
 
-```{r echo = FALSE, warning = FALSE}
+```{r}
 (doma <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2hFactor)))
 domadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2hFactor)
 domadf <- domadf %>% drop_na()
@@ -277,10 +288,12 @@ ggplot(domadfgroup, aes(x=sector, y=duration)) +
   scale_size_area(max_size = 20, guide = FALSE) +
   geom_text(aes(
     y = as.numeric(as.factor(duration)) - count/34, label = count),
-    vjust = 2,
+    vjust = 3,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(domadf)))
 
 fisher.test(select1$Q20Factor, select1$Q2hFactor)
 
@@ -290,7 +303,7 @@ cat("Number of responses :", vectorLength)
 
 # Car sharing
 
-```{r echo = FALSE, warning = FALSE}
+```{r}
 (carsh <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2iFactor)))
 carshdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2iFactor)
 carshdf <- carshdf %>% drop_na()
@@ -307,7 +320,9 @@ ggplot(carshdfgroup, aes(x=sector, y=duration)) +
     vjust = 3,
     colour = "black",
     size = 4
-  )
+  ) + 
+  xlab("Sektor") + ylab("Cas investiranja") +
+  labs(caption=paste("Number of responses :",nrow(carshdf)))
 
 fisher.test(select1$Q20Factor, select1$Q2iFactor)
 
