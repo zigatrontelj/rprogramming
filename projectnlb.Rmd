@@ -1,22 +1,25 @@
 ---
-title: "NLB project"
-output: html_document
+title: "Green transition most developed in secondary sector"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r include = FALSE}
 library(tidyverse)
 library(psych)
 library(ggplot2)
+library(DescTools)
 
 initial.data <- read.table("~/Desktop/IMB/multivariateAnalysis/rprogramming/anketaFinal.csv", header=TRUE, sep=";", dec=",", na.strings=c("-2", "-3", "-4", "-5"))
 
 select1 <- initial.data %>%
   select(Q20, Q1, Q2a, Q2b, Q2c, Q2d, Q2e, Q2f, Q2g, Q2h, Q2i, Q2j) %>% 
-  mutate(Q20=replace(Q20, Q20 == -1, 1)) %>% 
+  mutate(Q20=replace(Q20, Q20 == -1, 2)) %>% 
   mutate(Q2a=replace(Q2a, Q2a == -1, 1)) %>% 
   mutate(Q2b=replace(Q2b, Q2b == -1, 1)) %>% 
   mutate(Q2c=replace(Q2c, Q2c == -1, 1)) %>% 
@@ -31,115 +34,285 @@ select1 <- initial.data %>%
 
 select1$Q20Factor <- factor(select1$Q20,
                             levels = c(1:14),
-                            labels = c("Primarni", "Primarni", "Sekundarni", "Sekundarni", "Sekundarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni",  "Terciarni",  "Terciarni"))
+                            labels = c("Primarni", "Sekundarni", "Sekundarni", "Sekundarni", "Sekundarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni", "Terciarni",  "Terciarni",  "Terciarni"))
 
 select1$Q2aFactor <- factor(select1$Q2a,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
 
 select1$Q2bFactor <- factor(select1$Q2b,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
 
 select1$Q2cFactor <- factor(select1$Q2c,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
 
 select1$Q2dFactor <- factor(select1$Q2d,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
 
 select1$Q2eFactor <- factor(select1$Q2e,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
 
 select1$Q2fFactor <- factor(select1$Q2f,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
 
 select1$Q2gFactor <- factor(select1$Q2g,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
 
 select1$Q2hFactor <- factor(select1$Q2h,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
 
 select1$Q2iFactor <- factor(select1$Q2i,
-                            levels = c(1:5),
-                            labels = c("Ne financiramo", "1 leto", "2-3 let", "4-5 let", "5+ let"))
+                            levels = c(2:5),
+                            labels = c("1 leto", "2-5 let", "2-5 let", "5+ let"))
+```
 
-print("Recikliranje:")
+# Recikliranje
+
+```{r echo = FALSE, warning = FALSE}
 (recikliranje <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2aFactor)))
-chisq.test(select1$Q20Factor, select1$Q2aFactor, correct = TRUE)
 recikliranjedf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2aFactor)
-ggplot(recikliranjedf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+recikliranjedf <- recikliranjedf %>% drop_na()
+recikliranjedfgroup <- recikliranjedf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n())
 
-print("Uporaba okolju prijaznih materialov:")
+ggplot(recikliranjedfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 2,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2aFactor)
+
+vectorLength = nrow(recikliranjedf)
+cat("Number of responses :", vectorLength)
+```
+
+# Uporaba okolju prijaznih materialov
+
+```{r echo = FALSE, warning = FALSE}
 (okolje <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2bFactor)))
-chisq.test(select1$Q20Factor, select1$Q2bFactor, correct = TRUE)
 okoljedf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2bFactor)
-ggplot(okoljedf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+okoljedf <- okoljedf %>% drop_na()
+okoljedfgroup <- okoljedf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n()) %>% 
+  drop_na()
 
-print("Zmanjšanje porabe elektrike:")
-(energija <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2cFactor)))
-chisq.test(select1$Q20Factor, select1$Q2cFactor, correct = TRUE)
+ggplot(okoljedfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 3,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2bFactor)
+
+vectorLength = nrow(okoljedf)
+cat("Number of responses :", vectorLength)
+```
+
+# Zmanjšanje porabe elektrike
+
+```{r echo = FALSE, warning = FALSE}
+(energija <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2dFactor)))
 energijadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2cFactor)
-ggplot(energijadf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+energijadf <- energijadf %>% drop_na()
+energijadfgroup <- energijadf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n()) %>% 
+  drop_na()
 
-print("Zmanjšanje porabe pitne vode:")
+ggplot(energijadfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 2,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2dFactor)
+
+vectorLength = nrow(energijadf)
+cat("Number of responses :", vectorLength)
+```
+
+# Zmanjšanje porabe pitne vode
+
+```{r echo = FALSE, warning = FALSE}
 (voda <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2dFactor)))
-chisq.test(select1$Q20Factor, select1$Q2dFactor, correct = TRUE)
 vodadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2dFactor)
-ggplot(vodadf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+vodadf <- vodadf %>% drop_na()
+vodadfgroup <- vodadf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n()) %>% 
+  drop_na()
 
-print("Zmanjšanje emisij CO2:")
+ggplot(vodadfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 2,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2dFactor)
+
+vectorLength = nrow(vodadf)
+cat("Number of responses :", vectorLength)
+```
+
+# Zmanjšanje emisij CO2
+
+```{r echo = FALSE, warning = FALSE}
 (emisij <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2eFactor)))
-chisq.test(select1$Q20Factor, select1$Q2eFactor, correct = TRUE)
 emisijdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
-ggplot(emisijdf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+emisijdf <- emisijdf %>% drop_na()
+emisijdfgroup <- emisijdf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n()) %>% 
+  drop_na()
 
-print("Uporaba obnovljivih virov energije:")
+ggplot(emisijdfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 2,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2eFactor)
+
+vectorLength = nrow(emisijdf)
+cat("Number of responses :", vectorLength)
+```
+
+# Uporaba obnovljivih virov energije
+
+```{r echo = FALSE, warning = FALSE}
 (virov <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2fFactor)))
-chisq.test(select1$Q20Factor, select1$Q2fFactor, correct = TRUE)
-virovdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
-ggplot(virovdf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+virovdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2fFactor)
+virovdf <- virovdf %>% drop_na()
+virovdfgroup <- virovdf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n()) %>% 
+  drop_na()
 
-print("Brezpapirno poslovanje:")
+ggplot(virovdfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 2,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2fFactor)
+
+vectorLength = nrow(virovdf)
+cat("Number of responses :", vectorLength)
+```
+
+# Brezpapirno poslovanje
+
+```{r echo = FALSE, warning = FALSE}
 (brezpap <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2gFactor)))
-chisq.test(select1$Q20Factor, select1$Q2gFactor, correct = TRUE)
-brezpapdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
-ggplot(brezpapdf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+brezpapdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2gFactor)
+brezpapdf <- brezpapdf %>% drop_na()
+brezpapdfgroup <- brezpapdf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n()) %>% 
+  drop_na()
 
-print("Delo od doma:")
+ggplot(brezpapdfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 2,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2gFactor)
+
+vectorLength = nrow(brezpapdf)
+cat("Number of responses :", vectorLength)
+```
+
+# Delo od doma
+
+```{r echo = FALSE, warning = FALSE}
 (doma <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2hFactor)))
-chisq.test(select1$Q20Factor, select1$Q2hFactor, correct = TRUE)
-domadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
-ggplot(domadf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+domadf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2hFactor)
+domadf <- domadf %>% drop_na()
+domadfgroup <- domadf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n()) %>% 
+  drop_na()
 
-print("Car sharing:")
+ggplot(domadfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 2,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2hFactor)
+
+vectorLength = nrow(domadf)
+cat("Number of responses :", vectorLength)
+```
+
+# Car sharing
+
+```{r echo = FALSE, warning = FALSE}
 (carsh <- as.data.frame.matrix(table(select1$Q20Factor, select1$Q2iFactor)))
-chisq.test(select1$Q20Factor, select1$Q2iFactor, correct = TRUE)
-carshdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2eFactor)
-ggplot(carshdf, aes(x=sector, y=duration)) + 
-  geom_point() +
-  geom_jitter(width = 0.1, height = 0.1)
+carshdf <- data.frame(sector = select1$Q20Factor, duration = select1$Q2iFactor)
+carshdf <- carshdf %>% drop_na()
+carshdfgroup <- carshdf %>% 
+  group_by(sector, duration) %>% 
+  summarise(count = n()) %>% 
+  drop_na()
+
+ggplot(carshdfgroup, aes(x=sector, y=duration)) + 
+  geom_point(aes(size = count), shape = 21, colour = "black", fill = "cornsilk") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(duration)) - count/34, label = count),
+    vjust = 3,
+    colour = "black",
+    size = 4
+  )
+
+fisher.test(select1$Q20Factor, select1$Q2iFactor)
+
+vectorLength = nrow(carshdf)
+cat("Number of responses :", vectorLength)
 ```
 
 
