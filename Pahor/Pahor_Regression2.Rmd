@@ -1,0 +1,103 @@
+---
+title: "Pahor Regression 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(olsrr)
+library(mctest)
+```
+
+```{r}
+# Compute the more "european" version of fuel consumption (l/100km)
+# 1.61 km in a mile, 3.785 l in a gal
+
+mtcars <- mtcars %>% 
+  mutate(consumption = 100*3.785/1.61/mpg) %>%  # compute the new consumprion
+  select(!mpg)                                  # drop the old consumption
+
+reg3 <- lm(data =  mtcars , consumption ~ .) # full model
+summary(reg3)
+
+#Colinearity diagnostics
+
+library(mctest)
+mctest(reg3)
+imcdiag(reg3)
+
+# Forward selection
+
+(FWDfit <- ols_step_forward_p(reg3, penter = .05))
+
+plot(FWDfit)
+
+summary(FWDfit$model)
+
+# Backward elimination
+
+(BWDfit <- ols_step_backward_p(reg3, prem = .05))
+plot(BWDfit)
+summary(BWDfit$model)
+```
+
+```{r}
+
+# Visualizing some functional forms
+
+ggplot(mtcars) + 
+  aes(x = hp, y = consumption) + 
+  geom_point() +
+  geom_smooth(method='lm', formula= y~x) +
+  geom_smooth(method='lm', formula= y~poly(x,2), color = "red") +
+  geom_smooth(method='lm', formula= y~I(1/x), color = "green") +
+theme(legend.position="none") 
+
+#quadratic regression
+
+reg1.1 <- lm(data =  mtcars , consumption ~ poly(hp, 2))
+summary(reg1.1)
+
+reg1.1.1 <- lm(data =  mtcars , consumption ~ hp + I(hp^2))
+summary(reg1.1.1)
+
+
+#Inverse function
+
+reg1.2 <- lm(data =  mtcars , consumption ~ I(1/hp))
+summary(reg1.2)
+
+#(Transformed) power function
+
+reg1.3 <- lm(data =  mtcars , log(consumption) ~ log(hp))
+summary(reg1.3)
+```
+
+```{r}
+
+(job.satisfaction <- read_csv("https://www.dropbox.com/s/tuvbtomjol8akuz/job_satisfaction.csv?dl=1")
+)
+
+ggplot(job.satisfaction) + 
+  aes(x = salary, y = satisfaction) + 
+  geom_point()
+
+reg1 <- lm(data = job.satisfaction, satisfaction ~ salary)
+summary(reg1)
+
+ggplot(job.satisfaction) + 
+  aes(x = salary, y = satisfaction, color = position) + 
+  geom_point()
+
+reg2 <- lm(data = job.satisfaction, satisfaction ~ salary + position)
+summary(reg2)
+
+reg3 <- lm(data = job.satisfaction, satisfaction ~ salary + position + salary*position)
+summary(reg3)
+
+library(mctest)
+mctest(reg3)
+imcdiag(reg3)
+
+```

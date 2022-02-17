@@ -1,0 +1,99 @@
+---
+title: "Perceptual mapping And Factor Analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(psych)
+```
+
+```{r}
+(perceptions <- read_csv("/Users/mpahor/Dropbox/Tekoce/Pedagosko/IMB MVA/IMB2021/R/perceptions.csv") #read/prepare basic dataset
+)
+```
+
+
+```{r}
+#Compute means by retailer
+
+(mapdata <- perceptions %>% 
+  group_by(Retailer) %>% 
+  summarize(across(everything(), mean)) %>% 
+  column_to_rownames(var = "Retailer")
+)
+```
+
+
+```{r}
+# principal component reduction of data
+
+pc.perc <- princomp(mapdata, cor = TRUE)
+summary(pc.perc)
+```
+
+
+```{r}
+# visualizing the map
+
+biplot(pc.perc)
+```
+
+# Exploratory factor analysis - BFI
+
+```{r}
+
+bfi
+
+describe(bfi)
+
+(bfi_items <- bfi %>% 
+  select(!c(gender, education, age))
+)
+
+KMO(bfi_items)
+fa.parallel(bfi_items, fm = "ml", fa = "fa")
+
+(sixfactor <- fa(bfi_items, nfactors = 6, rotate = "none", fm = "ml")
+)
+
+(sixfactor <- fa(bfi_items, nfactors = 6, fm = "ml")
+)
+print.psych(sixfactor, sort = TRUE, cut = .4)
+
+
+(fivefactor <- fa(bfi_items, nfactors = 5, fm = "ml")
+)
+print.psych(fivefactor, cut = .4)
+
+
+```
+
+
+```{r}
+
+CarValue <- read_csv("https://www.dropbox.com/s/ekasl44vo0femj0/CarValue.csv?dl=1")
+parallel <- fa.parallel(CarValue, fm = 'ml', fa = 'fa')
+
+KMO(CarValue)
+CarValue <- CarValue[,names(CarValue) != "Safety"] #Excluding "Safety" cause it has a low MSA score
+
+threefactor <- fa(CarValue,nfactors = 3,rotate = "varimax",fm="ml")
+print.psych(threefactor, sort = TRUE) #, cut = .4)
+plot(threefactor)
+
+fivefactor <- fa(CarValue,nfactors = 5,rotate = "varimax",fm="ml")
+print.psych(fivefactor, sort = TRUE)#, cut = .4)
+
+#Computing scores
+
+CarValue_value <- CarValue[ , colnames(CarValue) %in% c("Resale_Value", "Maintenance", "Price")]
+CarValue_functions <- select(CarValue,2,4,5,6,8)
+alpha(CarValue_value)
+alpha(CarValue_functions)
+
+
+```
+
+

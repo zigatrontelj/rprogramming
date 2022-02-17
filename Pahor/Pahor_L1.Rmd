@@ -1,0 +1,83 @@
+---
+title: "IMB 2022 L1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rstatix)
+```
+
+```{r}
+score <- c(93, 63, 39, 90, 44, 42, 95, 76, 96, 34, 63, 69, 89, 47, 70, 67, 70, 67, 37, 69, 34, 37, 39, 42, 44, 47, 63, 63, 67, 67, 69, 69, 70, 70, 76, 89, 90, 93, 95, 96)
+grade <- c(10, 7, 5, 9, 5, 5, 10, 8, 10, 5, 7, 8, 9, 5, 7, 7, 7, 7, 5, 7, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 8, 8, 9, 9, 10, 10, 10)
+
+(exam <- tibble(score, grade)
+)
+
+exam %>% summarize(across(.cols = everything(),list(min = min, mean = mean, median = median, max = max)))
+
+get_summary_stats(exam)
+
+exam <- tibble(score, grade = as.factor(grade))
+
+exam %>% summarize(across(where(is.numeric),list(min = min, mean = mean, median = median, max = max))) 
+
+#rstatix
+```
+
+
+```{r}
+table(exam$grade)
+
+
+
+(mytable <- exam %>% 
+    count(grade) %>% 
+    mutate(RelFreq = round(n / sum(n) * 100,1)) %>% 
+    mutate(CumRelFreq = cumsum(RelFreq))
+)
+
+table(exam$scores)
+
+
+(mytable <- exam %>% 
+    mutate(class = cut(scores, breaks = 7)) %>% 
+    count(class) %>% 
+    mutate(RelFreq = round(n / sum(n) * 100,1)) %>% 
+    mutate(CumRelFreq = cumsum(RelFreq))
+)
+
+
+(mytable <- exam %>% 
+    mutate(class = cut(score, breaks = seq(30,100, by = 10))) %>% 
+    count(class) %>% 
+    mutate(RelFreq = round(n / sum(n) * 100,1)) %>% 
+    mutate(CumRelFreq = cumsum(RelFreq))
+)
+
+(mytable <- exam %>% 
+    mutate(class = cut(score, breaks = 10*(3:10))) %>% 
+    count(class) %>% 
+    mutate(RelFreq = round(n / sum(n) * 100,1)) %>% 
+    mutate(CumRelFreq = cumsum(RelFreq))
+)
+```
+
+
+```{r}
+
+(financial_literacy <- read_csv("https://www.dropbox.com/s/wux8adgbv5cnq9i/tax_literacy_youth.csv?dl=1")
+)
+
+get_summary_stats(financial_literacy, type = "five_number")
+
+(mytable <- financial_literacy %>% 
+    count(age) %>% 
+    mutate(RelFreq = round(n / sum(n) * 100,1)) %>% 
+    mutate(CumRelFreq = cumsum(RelFreq))
+)
+
+```
+

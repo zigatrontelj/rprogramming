@@ -1,0 +1,61 @@
+---
+title: "IMB MVA Pahor Lecture 6"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(psych)
+library(GPArotation)
+```
+
+```{r}
+(simpleEx <- matrix(c(1,.61,.77,.61,1,.51,.77,.51,1),nrow = 3, ncol = 3)
+)
+
+KMO(simpleEx)
+cortest.bartlett(simpleEx)
+simpleEx.pca <- principal(simpleEx, nfactors = 3, rotate = "none")
+print.psych(simpleEx.pca)
+fa.parallel(simpleEx, fa="pc")
+
+
+```
+
+```{r}
+
+(myPCAdata <- mtcars %>% 
+  select(!c(vs, am))
+)  
+
+(hpa <- fa.parallel(myPCAdata, fa = "pc")
+)
+KMO(myPCAdata)
+(myPCA <- principal(myPCAdata, nfactors = hpa$ncomp, rotate = "none", sort = T)
+)
+
+
+```
+
+
+```{r}
+
+(myPCAdata <- read_csv("https://www.dropbox.com/s/3ea9f117nf533ek/NBA2020_21_player_stats.csv?dl=1") %>% 
+   select(where(is.numeric)) %>% 
+   select(!c(Rk, Age, G, GS))
+)  
+
+(myPCAdata <- read_csv("https://www.dropbox.com/s/3ea9f117nf533ek/NBA2020_21_player_stats.csv?dl=1") %>% 
+   select(MP, PTS, contains("percent"), AST, STL, BLK)
+)  
+
+
+(hpa <- fa.parallel(myPCAdata, fa = "pc")
+)
+KMO(myPCAdata)
+(myPCA <- principal(myPCAdata, nfactors = hpa$ncomp, rotate = "none", sort = T)
+)
+print.psych(myPCA, sort = T, cut = .4)
+
+```
