@@ -1,0 +1,438 @@
+---
+title: "Clustering"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages(ggplot2)
+library(ggplot2)
+#install.packages("ggfortify")
+library(ggfortify)
+#install.packages("ranger")
+library(ranger)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("Hmisc")
+library(Hmisc)
+#install.packages("factoextra")
+library(factoextra)
+#install.packages("cluster")
+library(cluster)
+#install.packages("magrittr")
+library(magrittr)
+#install.packages("NbClust")
+library("NbClust")
+```
+
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L2/Customers/Survey.csv", header=TRUE, sep=";", dec="," )
+head(mydata)
+```
+Description:
+
+-  ID: Customer ID.
+-  x1: Customer type (1:Less than 1 year, 2:Between 1-5 years, 3:Longer than 5 years)
+-  x2: Industry type (0:Restaurant, 1:Merchant)
+-  x3: Firm size (0:Small firm - up to 10 employees, 1:Large firm - more than 10 employees)
+-  x4: Region (0:Slo, 1:EU)
+-  x5: Distribution system (0:Sold indirectly through a broker, 1:Sold directly)
+-  x6: Product quality (0:Poor, 10:Excellent)
+-  x7: E-commerce activities/website (0:Poor, 10:Excellent)
+-  x8: Technical support (0:Poor, 10:Excellent)
+-  x9: Complaint resolution (0:Poor, 10:Excellent)
+- x10: Advertising (0:Poor, 10:Excellent)
+- x11: Product line (0:Poor, 10:Excellent)
+- x12: Sales force image (0:Poor, 10:Excellent)
+- x13: Competitive pricing (0:Poor, 10:Excellent)
+- x14: Warranty and claims (0:Poor, 10:Excellent)
+- x15: New products (0:Poor, 10:Excellent)
+- x16: Ordering and billing (0:Poor, 10:Excellent)
+- x17: Price flexibility (0:Poor, 10:Excellent)
+- x18: Delivery speed (0:Poor, 10:Excellent)
+- x19: Customer satisfaction (0:Poor, 10:Excellent)
+- x20: Likelihood of recommendation (0:Not likely, 10:Absolutely)
+
+```{r}
+mydata$CustType_F <- factor(mydata$x1, 
+                            levels = c(1, 2, 3), 
+                            labels = c("< 1 year", "1-5 years", "> 5 years"))
+
+mydata$IndusType_F <- factor(mydata$x2,
+                             levels = c(0, 1),
+                             labels = c("Restaurant", "Merchant"))
+
+mydata$FirmSize_F <- factor(mydata$x3, 
+                            levels = c(0, 1), 
+                            labels = c("Up to 10", "More than 10"))
+
+mydata$Region_F <- factor(mydata$x4, 
+                          levels = c(0, 1), 
+                          labels = c("Slo", "EU"))
+
+mydata$Distrib_F <- factor(mydata$x5, 
+                           levels = c(0, 1), 
+                           labels = c("Broker", "Directly"))
+```
+
+```{r}
+summary(mydata[c("x6", "x8", "x12", "x15", "x17", "x18")]) #Describing clustering variables
+```
+
+
+
+
+
+```{r}
+mydata_std <- as.data.frame(scale(mydata[c("x6", "x8", "x12", "x15", "x17", "x18")])) #Saving standardized cluster variables into new data frame
+```
+
+```{r}
+mydata_std$Dissimilarity = sqrt(mydata_std$x6^2 + mydata_std$x8^2 + mydata_std$x12^2 + mydata_std$x15^2 + mydata_std$x18^2 + mydata_std$x18^2) #Finding outliers
+
+```
+
+```{r}
+head(mydata_std[order(-mydata_std$Dissimilarity), ], 5) #Finding top 5 objects with highest value of dissimilarity
+```
+
+```{r}
+print(mydata[40, ]) #Showing customer ID40
+```
+
+
+```{r}
+mydata <- mydata[-40, ] #Removing ID40 from original data frame
+mydata_std <- as.data.frame(scale(mydata[c("x6", "x8", "x12", "x15", "x17", "x18")])) 
+```
+
+
+
+```{r}
+round(cor(mydata_std), 2)
+```
+
+```{r}
+library(factoextra) 
+
+#Finding Eudlidean distances, based on 6 Cluster variables, then saving them into object Distances
+
+Distances <- get_dist(mydata_std, 
+                      method = "euclidian")
+
+fviz_dist(Distances) #Prikažemo matriko razdalj
+```
+
+```{r}
+library(factoextra) 
+get_clust_tendency(mydata_std, #Hopkins statistics
+                   n = nrow(mydata_std) - 1,
+                   graph = FALSE) 
+```
+
+```{r}
+library(dplyr)
+WARD <- mydata_std %>% #Selecting variables
+  get_dist(method = "euclidean") %>%  #Selecting distance
+  hclust(method = "ward.D2") #Selecting algorithm         
+
+WARD
+```
+
+```{r}
+library(factoextra)
+fviz_dend(WARD) #Dendrogram
+```
+```{r}
+fviz_dend(WARD, 
+          k = 3, #Number of groups
+          palette = "Set1", #Colours
+          rect = TRUE) #Showing groups
+```
+
+
+```{r}
+fviz_dend(WARD, 
+          k = 5, #Number of groups
+          palette = "Set1", #Colours
+          rect = TRUE) #Showing groups
+```
+
+
+
+
+```{r}
+# Indices for selecting optimal number of clusters
+set.seed(1)
+library(NbClust)
+Index <- NbClust(mydata_std,
+                 distance = "euclidean",
+                 method = "ward.D2", 
+                 index ="all",
+                 min.nc = 2, max.nc = 6) #Solution between 2 and 6 clusters
+
+library(factoextra)
+fviz_nbclust(Index,
+             ggtheme = theme_linedraw())
+```
+
+```{r}
+mydata$Clustering_Ward <- cutree(WARD, 
+                                 k = 5) #Number of groups
+head(mydata)
+```
+
+
+```{r}
+#Showing the positions of initial leaders, used as starting point for k-means clustering
+
+Leaders_initial <- aggregate(mydata_std, 
+                             by = list(mydata$Clustering_Ward), 
+                             FUN = mean)
+
+Leaders_initial
+```
+
+```{r}
+library(factoextra) 
+
+kmeans_clu <- hkmeans(mydata_std, #Data
+                      k = 5, #Number of groups
+                      hc.metric = "euclidean", #Distance for hierar. clus.
+                      hc.method = "ward.D2") #Alghoritm for hierar. clus.
+
+kmeans_clu
+```
+
+```{r}
+library(factoextra)
+fviz_cluster(kmeans_clu, 
+             palette = "Set1", 
+             repel = FALSE,
+             ggtheme = theme_linedraw())
+```
+
+```{r}
+# Making PCA
+
+R <- cor(mydata_std) 
+round(R, 3)
+
+library(psych)
+cortest.bartlett(R, 
+                 n = nrow(mydata_std))
+```
+
+
+```{r}
+library(psych)
+KMO(R)
+```
+
+
+```{r}
+library(FactoMineR) 
+components <- PCA(mydata_std, 
+                  scale.unit = FALSE,
+                  graph = FALSE)
+```
+
+
+```{r}
+library(factoextra) 
+get_eigenvalue(components)
+```
+
+
+```{r}
+library(factoextra)
+fviz_eig(components,
+         choice = "eigenvalue",
+         main = "Screeplot",
+         ylab = "Eigenvalues",
+         xlab = "Principal Component",
+         addlabels = TRUE)
+```
+
+
+```{r}
+library(psych)
+fa.parallel(mydata_std, 
+            sim = FALSE, 
+            fa = "pc")
+```
+
+
+```{r}
+library(FactoMineR)
+components <- PCA(mydata_std, 
+                  scale.unit = FALSE, 
+                  graph = FALSE,
+                  ncp = 2)
+``` 
+
+
+```{r}
+components
+
+print(components$var$cor)
+```
+
+
+```{r}
+library(factoextra)
+fviz_pca_var(components, 
+             repel = TRUE)
+```
+
+
+```{r}
+library(factoextra)
+fviz_pca_biplot(components) 
+```
+
+
+
+
+
+```{r}
+#Clustering, cont.
+
+mydata$Clustering_kmeans <- kmeans_clu$cluster
+head(mydata)
+```
+
+```{r}
+#Do we have any reclassification?
+table(mydata$Clustering_Ward)
+table(mydata$Clustering_kmeans)
+table(mydata$Clustering_Ward, mydata$Clustering_kmeans)
+```
+
+```{r}
+Leaders_final <- kmeans_clu$centers
+Leaders_final 
+```
+
+
+```{r}
+#Describing clusters
+
+Figure <- as.data.frame(Leaders_final)
+Figure$ID <- 1:nrow(Figure)
+
+library(tidyr)
+Figure <- pivot_longer(Figure, cols = c("x6", "x8", "x12", "x15", "x17", "x18"))
+
+Figure$Group <- factor(Figure$ID, 
+                       levels = c(1, 2, 3, 4, 5), 
+                       labels = c("1", "2", "3", "4", "5"))
+
+Figure$NameF <- factor(Figure$name, 
+                       levels = c("x6", "x8", "x12", "x15", "x17", "x18"), 
+                       labels = c("Prod. value", "Tech. support", "Marketing", 
+                                  "Innovativity", "Price comp.",  "Post-sale Service"))
+
+library(ggplot2)
+ggplot(Figure, aes(x = NameF, y = value)) +
+  geom_hline(yintercept=0) +
+  theme_linedraw() +
+  geom_point(aes(shape = Group, col = Group), size=3) +
+  geom_line(aes(group = ID), size=1) +
+  ylab("Averages") +
+  xlab("Cluster variables")+
+  ylim(-2.2, 2.2)
+```
+
+
+```{r}
+#Checking if clustering variables successfully differentiate between groups
+
+fit <- aov(cbind(x6, x8, x12, x15, x17, x18) ~ as.factor(Clustering_kmeans), 
+           data = mydata)
+
+summary(fit)
+```
+
+
+
+```{r}
+aggregate(mydata$x19, 
+          by = list(mydata$Clustering_kmeans), 
+          FUN = mean)
+```
+
+
+
+```{r}
+aggregate(mydata$x20, 
+          by = list(mydata$Clustering_kmeans), 
+          FUN = mean)
+```
+
+
+
+```{r}
+fit <- aov(cbind(x19, x20) ~ as.factor(Clustering_kmeans), 
+           data = mydata)
+
+summary(fit)
+```
+
+```{r}
+
+hi_square <- chisq.test(mydata$CustType_F, as.factor(mydata$Clustering_kmeans))
+hi_square
+
+addmargins(hi_square$observed)
+addmargins(round(hi_square$expected, 2)) 
+
+round(hi_square$res, 2) 
+
+library(DescTools)
+CramerV(mydata$CustType_F, as.factor(mydata$Clustering_kmeans)) 
+```
+
+
+```{r}
+hi_square <- chisq.test(mydata$IndusType_F, as.factor(mydata$Clustering_kmeans))
+hi_square
+
+round(hi_square$res, 2)
+```
+
+```{r}
+hi_square <- chisq.test(mydata$FirmSize_F, as.factor(mydata$Clustering_kmeans))
+hi_square
+
+round(hi_square$res, 2)
+```
+
+```{r}
+hi_square <- chisq.test(mydata$Region_F, as.factor(mydata$Clustering_kmeans))
+hi_square
+
+round(hi_square$res, 2)
+```
+
+```{r}
+hi_square <- chisq.test(mydata$Distrib_F, as.factor(mydata$Clustering_kmeans))
+hi_square
+
+round(hi_square$res, 2)
+```
+
+
+```{r}
+#Saving results
+write.table(mydata, "/cloud/project/Lectures/L2/Customers/SurveyResults.csv", 
+            row.names = FALSE, 
+            sep = ";", 
+            dec = ",")
+```
+
+
+

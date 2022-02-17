@@ -1,0 +1,48 @@
+---
+title: "Test of difference in two population proportions"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("car")
+library(car)
+#install.packages("formatR")
+library(formatR)
+#install.packages("pastecs")
+library(pastecs)
+#install.packages("psych")
+library(psych)
+```
+
+
+
+
+```{r}
+results <- chisq.test(matrix(c(195, 39, 45, 44), nrow = 2), 
+                      correct = TRUE)
+
+results
+
+addmargins(results$observed)
+
+round(results$expected, 2)
+```
+
+
+```{r}
+prop.test(c(195, 45), c(234, 89),
+          correct = TRUE,
+          alternative = "greater")
+```
+```{r}
+fisher.test(matrix(c(195, 39, 45, 44), nrow = 2))
+```
+
+

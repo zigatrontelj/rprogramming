@@ -1,0 +1,58 @@
+---
+title: "Wilcoxon Rank Sum Test"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width=100)
+```
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L1/Shopping/Shopping.csv", header=TRUE, sep=";", dec=",")
+print(mydata)
+```
+Description:
+
+- Gender: 0 = Male, 1 = Female,
+- Time: Time shopping in minutes
+
+
+```{r}
+mydata$GenderF <- factor(mydata$Gender, 
+                         levels = c(0, 1), 
+                         labels = c("Male", "Female"))
+```
+
+```{r}
+library(psych)
+describeBy(mydata$Time, g = mydata$GenderF)
+```
+
+```{r}
+
+library(ggpubr)
+ggqqplot(mydata,
+         "Time",
+         facet.by = "GenderF")
+```
+
+```{r}
+library(rstatix)
+
+mydata %>%
+  group_by(GenderF) %>%
+  shapiro_test(Time)
+```
+
+
+
+```{r}
+wilcox.test(mydata$Time ~ mydata$GenderF,
+            paired = FALSE,
+            correct = FALSE,
+            exact = FALSE,
+            alternative = "two.sided")
+```
+

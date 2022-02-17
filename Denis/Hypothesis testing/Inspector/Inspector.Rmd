@@ -1,0 +1,32 @@
+---
+title: "Binomial test"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("car")
+library(car)
+#install.packages("formatR")
+library(formatR)
+#install.packages("pastecs")
+library(pastecs)
+#install.packages("psych")
+library(psych)
+```
+
+
+```{r}
+binom.test(x = 9,
+           n = 33,
+           p = 0.10,
+           alternative = "greater")
+```
+
+

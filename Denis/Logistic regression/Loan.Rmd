@@ -1,0 +1,181 @@
+---
+title: "Logistic regression"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("ggpubr")
+library(ggpubr)
+#install.packages("DescTools")
+library(DescTools)
+```
+
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L3/Loan.csv", header=TRUE, sep=";", dec=",")
+head(mydata)
+```
+
+Description
+
+- ID: Person ID.
+- LatePayment: Was there a problem with loan repayment (0:No, 1:Yes).
+- Age: Age of the person when taking the loan.
+- Education: Level of education (1:Primary school, 2:High school, 3:University).
+- Income: Yearly income of household in 1,000 EUR.
+- Prop_Income: Monthly payments as a proportion of monthly income.
+
+```{r}
+mydata$LatePayF <- factor(mydata$LatePayment, 
+                          levels = c(0, 1), 
+                          labels = c("No", "Yes"))
+
+mydata$EducationF <- factor(mydata$Education, 
+                            levels = c(1, 2, 3),
+                            labels = c("Primary", "High", "University"))
+```
+
+```{r}
+summary(mydata[ , c(-1, -2, -4)]) #Descriptive statistics
+```
+
+```{r}
+fit0 <- glm(LatePayF ~ 1, #Dependent and explanatory variables
+            family = binomial, #Binary logistic regression
+            data = mydata)
+
+summary(fit0)
+```
+
+```{r}
+exp(cbind(odds = fit0$coefficients, confint.default(fit0))) #Odds for Y=1
+
+head(fitted(fit0)) #Estimated probability for Y=1
+
+Pseudo_R2_fit1 <- 3744/5000 #Prop. of correctly classified units
+
+Pseudo_R2_fit1
+```
+
+```{r}
+fit1 <- glm(LatePayF ~ Age,  
+            family = binomial, 
+            data = mydata)
+
+summary(fit1)
+```
+
+```{r}
+anova(fit0, fit1, test="Chi") #Comparisions of models based on -2LL statistics
+```
+
+```{r}
+exp(cbind(OR = fit1$coefficients, confint.default(fit1))) #Odds ratio for Y=1 (with 95% CI)
+```
+
+
+```{r}
+fit2 <- glm(LatePayF ~ Age + EducationF + Income + Prop_Income,  
+            family = binomial, 
+            data = mydata)
+
+library(car)
+vif(fit2)
+
+mydata$StdResid <- rstandard(fit2)
+mydata$Cook <- cooks.distance(fit2)
+```
+
+```{r}
+library(ggplot2)
+StdResiduals <- ggplot(mydata, aes(x=StdResid)) +
+                 theme_linedraw() +
+                 geom_histogram() +
+                 xlab("Standardized residuals")
+```
+
+```{r}
+library(ggplot2)
+CooksDist <- ggplot(mydata, aes(x=Cook)) +
+              theme_linedraw() +
+              geom_boxplot() +
+              xlab("Cooks distances")
+```
+
+```{r}
+ggarrange(StdResiduals, CooksDist,
+          ncol = 2, nrow = 1)
+```
+
+```{r}
+head(mydata[order(-mydata$Cook), ], 3) 
+
+mydata <- mydata[-4715, ] 
+```
+
+```{r}
+fit1 <- glm(LatePayF ~ Age,  
+            family = binomial, 
+            data = mydata)
+
+fit2 <- glm(LatePayF ~ Age + EducationF + Income + Prop_Income,  
+            family = binomial, 
+            data = mydata)
+```
+
+```{r}
+anova(fit1, fit2, test="Chi")
+```
+
+
+```{r}
+summary(fit2)
+```
+
+
+```{r}
+exp(cbind(OR = fit2$coefficients, confint.default(fit2)))
+```
+
+
+
+```{r}
+mydata$EstProb <- fitted(fit2) #Estimates of conditional probabilities for Y=1
+head(mydata)
+```
+
+```{r}
+mydata$Classification <- ifelse(test = mydata$EstProb < 0.5, 
+                                yes = "YES", 
+                                no = "NO")
+
+#If estimated conditional probability is below 0.5, person is classified into a group of people without problems of loan repayment.
+
+mydata$ClassificationF <- factor(mydata$Classification,
+                                 levels = c("NO", "YES"), 
+                                 labels = c("NO", "YES"))
+
+ClassificationTable <- table(mydata$LatePayF, mydata$ClassificationF) #Classification table based on 2 categorical variables.
+
+ClassificationTable
+
+Pseudo_R2_fit2 <- (ClassificationTable[1, 1] + ClassificationTable[2, 2] )/ nrow(mydata)
+Pseudo_R2_fit2
+```
+
+```{r}
+library(ggplot2)
+ggplot(mydata, aes(x=EstProb, fill=LatePayF))+
+  theme_linedraw() +
+  geom_histogram(position="fill", binwidth=0.01) +
+  scale_fill_grey() +
+  geom_vline(xintercept=0.50) +
+  labs(fill="Late payment") +
+  ylab("Proportion") + 
+  xlab("Estimates of conditional probabilities for Y=1")
+```
+
+

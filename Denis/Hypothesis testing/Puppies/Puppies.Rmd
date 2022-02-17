@@ -1,0 +1,185 @@
+---
+title: "ANOVA"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("car")
+library(car)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("reshape2")
+library(reshape2)
+#install.packages("onewaytests")
+library(onewaytests)
+```
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L1/Puppies/Puppies.csv", header=TRUE, sep=" ", dec=".")
+head(mydata)
+```
+Description:
+
+- Person: ID
+- Dose: 1: Control group, 2: 15 minutes exposed to Puppy, 3: 30 minutes exposed to Puppy
+- Happiness: How happy is a person between 1 and 10.
+
+
+```{r}
+mydata$DoseFactor <- factor(mydata$Dose, 
+                            levels = c(1, 2, 3), 
+                            labels = c("Control", "15 minutes", "30 minutes"))
+```
+
+
+```{r}
+library(psych)
+describe(mydata$Happiness)
+describeBy(x = mydata$Happiness, group = mydata$DoseFactor)
+```
+
+
+```{r}
+library(car)
+leveneTest(mydata$Happiness, group = mydata$DoseFactor)
+```
+```{r}
+library(dplyr)
+library(rstatix)
+mydata %>%
+  group_by(DoseFactor) %>%
+  shapiro_test(Happiness)
+```
+```{r}
+library(ggpubr)
+ggqqplot(mydata, "Happiness", facet.by = "DoseFactor")
+```
+
+
+```{r}
+ANOVA_results <- aov(Happiness ~ DoseFactor, 
+                     data = mydata)
+
+summary(ANOVA_results)
+
+print(model.tables(ANOVA_results, type="means"), digits = 3)
+```
+
+
+```{r}
+library(onewaytests)
+welch.test(Happiness ~ DoseFactor, 
+           data = mydata)
+```
+
+
+# Contrasts
+```{r}
+c1 <- c(-2, 1, 1)
+c2 <- c(0, -1, 1)
+weights <- cbind(c1, c2)
+weights
+
+contrasts(mydata$DoseFactor)
+
+contrasts(mydata$DoseFactor) <- weights
+contrasts(mydata$DoseFactor)
+```
+
+
+
+```{r}
+ANOVA_results <- aov(Happiness ~ DoseFactor, 
+                            data = mydata)
+
+summary(ANOVA_results)
+```
+
+
+```{r}
+summary.aov(ANOVA_results, 
+            split = list(DoseFactor = list("Control vs. Dose" = 1, 
+                                           "15 minutes vs. 30 minutes" = 2))) 
+```
+
+# Post-Hoc tests
+```{r}
+pairwise.t.test(x = mydata$Happiness, g = mydata$DoseFactor, 
+                p.adj = "none")
+
+pairwise.t.test(x = mydata$Happiness, g = mydata$DoseFactor, 
+                p.adj = "bonf")
+```
+
+```{r}
+pwc <- mydata %>%
+  pairwise_t_test(Happiness ~ DoseFactor, 
+                  paired = FALSE,
+                  p.adjust.method = "bonferroni")
+
+pwc
+```
+
+
+```{r}
+ANOVA_results <- anova_test(Happiness ~ DoseFactor, 
+                            data = mydata)
+
+library(rstatix)
+pwc <- pwc %>% 
+       add_y_position(fun = "median", step.increase = 0.35)
+
+
+library(ggpubr)
+ggboxplot(mydata, x = "DoseFactor", y = "Happiness", add = "point", ylim=c(0, 12)) +
+  stat_pvalue_manual(pwc, hide.ns = FALSE) +
+  stat_summary(fun = mean, geom = "point", shape = 16, size = 4,
+               aes(group = DoseFactor), color = "darkred",
+               position = position_dodge(width = 0.8)) +
+  stat_summary(fun = mean, colour = "darkred", 
+               position = position_dodge(width = 0.8),
+               geom = "text", vjust = -0.5, hjust = -1,
+               aes(label = round(..y.., digits = 2), group = DoseFactor)) +
+  labs(subtitle = get_test_label(ANOVA_results,  detailed = TRUE),
+       caption = get_pwc_label(pwc))
+```
+
+### Kruskal-Wallis test
+
+```{r}
+kruskal.test(Happiness ~ DoseFactor, 
+             data = mydata)
+```
+
+```{r}
+pwc <- mydata %>%
+  wilcox_test(Happiness ~ DoseFactor, 
+              paired = FALSE, 
+              p.adjust.method = "bonferroni")
+ 
+Kruskal_results <- kruskal_test(Happiness ~ DoseFactor, 
+                                data = mydata)
+
+
+library(rstatix)
+pwc <- pwc %>% 
+       add_y_position(fun = "median", step.increase = 0.35)
+
+
+library(ggpubr)
+ggboxplot(mydata, x = "DoseFactor", y = "Happiness", add = "point", ylim=c(0, 12)) +
+  stat_pvalue_manual(pwc, hide.ns = FALSE) +
+  stat_summary(fun = median, geom = "point", shape = 16, size = 4,
+               aes(group = DoseFactor), color = "darkred",
+               position = position_dodge(width = 0.8)) +
+  stat_summary(fun = median, colour = "darkred", 
+               position = position_dodge(width = 0.8),
+               geom = "text", vjust = -0.5, hjust = -1,
+               aes(label = round(..y.., digits = 2), group = DoseFactor)) +
+  labs(subtitle = get_test_label(Kruskal_results,  detailed = TRUE),
+       caption = get_pwc_label(pwc))
+```
+

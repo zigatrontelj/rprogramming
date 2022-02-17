@@ -1,0 +1,32 @@
+---
+title: "Test of proportion"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("car")
+library(car)
+#install.packages("formatR")
+library(formatR)
+#install.packages("pastecs")
+library(pastecs)
+#install.packages("psych")
+library(psych)
+```
+
+```{r}
+prop.test(x = 965,
+          n = 1870,
+          p = 0.5,
+          correct = FALSE,
+          alternative = "greater")
+```
+
+

@@ -1,0 +1,53 @@
+---
+title: "Paired samples t-test"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("car")
+library(car)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("reshape2")
+library(reshape2)
+```
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L1/Literacy skills/Literacy.csv", header=TRUE, sep=";", dec=",")
+head(mydata)
+```
+Description:
+
+- ID: Student ID
+- Reading: Result at reading
+- Writing: Result at writing
+
+
+
+```{r}
+library(psych)
+describe(mydata[ , -1])
+```
+```{r}
+mydata$Diff <- mydata$Reading - mydata$Writing
+
+library(ggplot2)
+ggplot(mydata, aes(x=Diff)) +
+  geom_histogram(binwidth = 4, color = "black") +
+  xlab("Differences")
+```
+
+```{r}
+shapiro.test(mydata$Diff)
+```
+
+
+# Paired samples
+```{r}
+t.test(mydata$Reading, mydata$Writing, 
+       paired = TRUE, 
+       alternative = "two.sided")
+```

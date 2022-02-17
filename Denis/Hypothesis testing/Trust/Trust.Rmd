@@ -1,0 +1,240 @@
+---
+title: "Friedman ANOVA"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("car")
+library(car)
+#install.packages("formatR")
+library(formatR)
+#install.packages("pastecs")
+library(pastecs)
+#install.packages("psych")
+library(psych)
+```
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L1/Trust/Trust.csv", header=TRUE, sep=";", dec=",")
+head(mydata)
+```
+Description:
+
+- ID: Person ID
+- trstprl: Trust in the parliament (0-10)
+- trstlgl: Trust in the legal system (0-10)
+- trstplc: Trust in the police (0-10)
+- trstplt: Trust in the politics (0-10)
+
+77, 88, 99 missing values
+
+```{r}
+set.seed(1)
+mydata <- mydata[sample(nrow(mydata), 50), ]
+```
+
+```{r}
+library(dplyr)
+library(naniar)
+
+mydata <- mydata %>%
+             replace_with_na(replace = list(trstprl = c(77, 88, 99),
+                                            trstlgl = c(77, 88, 99),
+                                            trstplc = c(77, 88, 99),
+                                            trstplt = c(77, 88, 99)))
+
+tail(mydata, 10)
+
+library(tidyr)
+mydata <- drop_na(mydata)
+```
+
+```{r}
+tail(mydata, 10)
+```
+
+
+```{r}
+#install.packages("tidyverse") #Includes ggplot2, dplyr, tidyr, readr, purr, tible, stringr, forcats
+#install.packages("ggpubr")
+#install.packages("rstatix")
+```
+
+
+```{r}
+library(rstatix)
+library(tidyverse)
+mydata_long <- mydata %>%
+                 gather(key = "System", value = "Trust", trstprl, trstlgl, trstplc, trstplt) %>%
+                 convert_as_factor(System)
+
+tail(mydata_long, 10)
+```
+
+
+```{r}
+library(ggpubr)
+ggboxplot(mydata_long, 
+          x = "System", 
+          y = "Trust", 
+          add = "jitter")
+```
+
+### Repeated measures ANOVA
+```{r}
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+
+mydata_long %>%
+  group_by(System) %>%
+  identify_outliers(Trust)
+```
+
+```{r}
+mydata_long <- mydata_long %>%
+  filter(!ID == 248)
+```
+
+```{r}
+mydata_long %>%
+  group_by(System) %>%
+  identify_outliers(Trust)
+```
+
+```{r}
+mydata_long %>%
+  group_by(System) %>%
+  shapiro_test(Trust)
+```
+
+
+```{r}
+ggqqplot(mydata_long, "Trust", facet.by = "System")
+```
+
+
+
+```{r}
+library(rstatix)
+mydata_long %>%
+  group_by(System) %>%
+  get_summary_stats(Trust, type = "common")
+```
+
+
+
+
+```{r}
+ANOVA_results <- anova_test(dv = Trust, #Dependent variable
+                            wid = ID, #Subject identifier
+                            within = System, #Within-subject factor variable
+                            data = mydata_long)
+
+get_anova_table(ANOVA_results)
+```
+
+
+```{r}
+pwc <- mydata_long %>%
+  pairwise_t_test(Trust ~ System, 
+                  paired = TRUE,
+                  p.adjust.method = "bonferroni")
+
+pwc
+```
+
+
+```{r}
+library(rstatix)
+pwc <- pwc %>% 
+       add_y_position(fun = "median", step.increase = 0.35)
+
+library(ggpubr)
+ggboxplot(mydata_long, x = "System", y = "Trust", add = "point", ylim=c(0, 18)) +
+  stat_pvalue_manual(pwc, hide.ns = FALSE) +
+  stat_summary(fun = mean, geom = "point", shape = 16, size = 4,
+               aes(group = System), color = "darkred",
+               position = position_dodge(width = 0.8)) +
+  stat_summary(fun = mean, colour = "darkred", 
+               position = position_dodge(width = 0.8),
+               geom = "text", vjust = 0.5, hjust = -2,
+               aes(label = round(..y.., digits = 2), group = System)) +
+  labs(subtitle = get_test_label(ANOVA_results,  detailed = TRUE),
+       caption = get_pwc_label(pwc))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Friedman ANOVA
+```{r}
+library(rstatix)
+FriedmanANOVA <- friedman_test(Trust ~ System | ID,
+                               data = mydata_long)
+
+FriedmanANOVA
+```
+
+
+```{r}
+library(rstatix)
+friedman_effsize(Trust ~ System | ID,
+                 data = mydata_long)
+```
+
+```{r}
+library(rstatix)
+comparisons <- wilcox_test(Trust ~ System, 
+                           paired = TRUE, 
+                           p.adjust.method = "bonferroni",
+                           data = mydata_long)
+
+comparisons
+```
+
+
+
+
+```{r}
+library(rstatix)
+comparisons <- comparisons %>% 
+                 add_y_position(fun = "median", step.increase = 0.35)
+
+library(ggpubr)
+ggboxplot(mydata_long, x = "System", y = "Trust", add = "point", ylim=c(0, 18)) +
+  stat_pvalue_manual(comparisons, hide.ns = FALSE) +
+  stat_summary(fun = median, geom = "point", shape = 16, size = 4,
+               aes(group = System), color = "darkred",
+               position = position_dodge(width = 0.8)) +
+  stat_summary(fun = median, colour = "darkred", 
+               position = position_dodge(width = 0.8),
+               geom = "text", vjust = 0.5, hjust = -8,
+               aes(label = round(..y.., digits = 2), group = System)) +
+  labs(subtitle = get_test_label(FriedmanANOVA,  detailed = TRUE),
+       caption = get_pwc_label(comparisons))
+```
+
+```{r}
+pchisq(q = 67.2, df = 3, lower.tail = FALSE)
+```
+
+

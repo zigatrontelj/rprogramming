@@ -1,0 +1,72 @@
+---
+title: "Independent samples"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("car")
+library(car)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("reshape2")
+library(reshape2)
+#install.packages("ggpubr") 
+library(ggpubr)
+```
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L1/Math/Math.csv", header=TRUE, sep=";", dec=",")
+head(mydata)
+```
+Description:
+
+- ID: ID of a student
+- Active: Is student regularly exercising?
+- Math: Result of math exam
+
+
+```{r}
+mydata$ActiveF <- factor(mydata$Active,
+                         levels = c(0, 1),
+                         labels = c("No", "Yes"))
+
+library(psych)
+describeBy(mydata$Math, mydata$ActiveF)
+```
+
+```{r}
+library(ggplot2)
+
+Active_no <- ggplot(mydata[mydata$ActiveF=="No",  ], aes(x = Math)) +
+  theme_linedraw() + 
+  geom_histogram() +
+  ggtitle("Not Active")
+
+Active_yes <- ggplot(mydata[mydata$ActiveF=="Yes",  ], aes(x = Math)) +
+  theme_linedraw() + 
+  geom_histogram() +
+  ggtitle("Active")
+
+library(ggpubr)
+ggarrange(Active_no, Active_yes,
+          ncol= 2, nrow = 1)
+```
+```{r}
+library(ggpubr)
+ggqqplot(mydata,
+         "Math",
+         facet.by = "ActiveF")
+```
+
+
+
+# Independent Samples
+```{r}
+t.test(mydata$Math ~ mydata$ActiveF, 
+       paired = FALSE,
+       var.equal = FALSE,
+       alternative = "two.sided")
+```

@@ -1,0 +1,257 @@
+---
+title: "Olympiad"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width=120)
+#install.packages(ggplot2)
+library(ggplot2)
+#install.packages("ggfortify")
+library(ggfortify)
+#install.packages("ranger")
+library(ranger)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("Hmisc")
+library(Hmisc)
+#install.packages("factoextra")
+library(factoextra)
+#install.packages("cluster")
+library(cluster)
+#install.packages("magrittr")
+library(magrittr)
+#install.packages("NbClust")
+library("NbClust")
+```
+
+
+```{r}
+data <- read.table("/cloud/project/Lectures/L2/Olympiad/Olympiad.csv", header=TRUE, sep=";", dec="," )
+
+colnames(data) <- c("ID", "Economics", "Emotional", "IQ", "Verbal", "Math", "Age", "Gender")
+head(data)
+```
+Description:
+
+- Economics: Results on olympiad.
+- Emotional: Emotional intelligence.
+- IQ
+- Verbal: Verbal ability.
+- Math: Mathematical ability.
+- Age
+- Gender: 0: F, 1: M.
+
+```{r}
+data$Emot_z <- scale(data$Emotional)
+data$IQ_z   <- scale(data$IQ)
+data$Verb_z <- scale(data$Verbal)
+data$Math_z <- scale(data$Math)
+
+data$GenderFactor <- factor(data$Gender, 
+                            levels = c(0, 1), 
+                            labels = c("F", "M"))
+```
+
+```{r}
+library(Hmisc)
+rcorr(as.matrix(data[, c("Emot_z", "IQ_z", "Verb_z", "Math_z")]), 
+      type="pearson")
+```
+
+
+```{r}
+data$Dissimilarity = sqrt(data$Verb_z^2 + data$IQ_z^2 + data$Verb_z^2 + data$Math_z^2)
+```
+
+```{r}
+head(data[order(-data$Dissimilarity), ], 10)
+```
+
+```{r}
+#data <- data[-132, ]
+```
+
+
+```{r}
+library(factoextra)
+distance <- get_dist(data[c("Emot_z", "IQ_z", "Verb_z", "Math_z")], 
+                     method="euclidian")
+
+fviz_dist(distance)
+```
+
+```{r}
+get_clust_tendency(data[c("Emot_z", "IQ_z", "Verb_z", "Math_z")], n = 100, 
+                   graph=FALSE)
+```
+
+```{r}
+WARD <- data[c("Emot_z", "IQ_z", "Verb_z", "Math_z")] %>%
+  #scale() %>%                           
+  get_dist(method = "euclidean") %>%  
+  hclust(method = "ward.D2")          
+
+WARD
+
+library(factoextra)
+fviz_dend(WARD, k = 2,
+          cex = 0.5, 
+          palette = "jama",
+          color_labels_by_k = TRUE, 
+          rect = TRUE 
+          )
+
+fviz_dend(WARD, k = 3,
+          cex = 0.5, 
+          palette = "jama",
+          color_labels_by_k = TRUE, 
+          rect = TRUE 
+          )
+
+fviz_dend(WARD, k = 4,
+          cex = 0.5, 
+          palette = "jama",
+          color_labels_by_k = TRUE, 
+          rect = TRUE 
+          )
+
+fviz_dend(WARD, k = 5,
+          cex = 0.5, 
+          palette = "jama",
+          color_labels_by_k = TRUE, 
+          rect = TRUE 
+          )
+```
+
+```{r}
+set.seed(1)
+#install.packages("NbClust")
+library(NbClust)
+OptNumber <- data[c("Emot_z", "IQ_z", "Verb_z", "Math_z")] %>%
+  #scale() %>%
+  NbClust(distance = "euclidean",
+          min.nc = 2, max.nc = 10, 
+          method = "ward.D2", 
+          index ="all") 
+
+fviz_nbclust(OptNumber, ggtheme = theme_minimal())
+```
+```{r}
+data$ClusterWard <- cutree(WARD, 
+                           k = 3)
+head(data)
+```
+
+```{r}
+InitialLeaders <- aggregate(data[, c("Emot_z", "IQ_z", "Verb_z", "Math_z")], 
+                            by = list(data$ClusterWard), 
+                            FUN = mean)
+
+InitialLeaders
+```
+
+
+
+
+```{r}
+library(factoextra)
+K_MEANS <- hkmeans(data[c("Emot_z", "IQ_z", "Verb_z", "Math_z")], 
+                  k = 3,
+                  hc.metric = "euclidean",
+                  hc.method = "ward.D2")
+
+K_MEANS
+
+fviz_cluster(K_MEANS, 
+             palette = "jama", 
+             repel = FALSE,
+             ggtheme = theme_classic())
+
+data$ClusteringK_MEANS <- K_MEANS$cluster
+head(data)
+```
+
+```{r}
+Centroids <- K_MEANS$centers
+Centroids
+```
+
+```{r}
+library(ggplot2)
+library(tidyr)
+
+Figure <- as.data.frame(Centroids)
+Figure$id <- 1:nrow(Figure)
+Figure <- pivot_longer(Figure, cols = c(Emot_z, IQ_z, Verb_z, Math_z))
+
+Figure$Groups <- factor(Figure$id, 
+                        levels = c(1, 2, 3), 
+                        labels = c("1", "2", "3"))
+
+Figure$nameFactor <- factor(Figure$name, 
+                            levels = c("Emot_z", "IQ_z", "Verb_z", "Math_z"), 
+                            labels = c("Emot_z", "IQ_z", "Verb_z", "Math_z"))
+
+ggplot(Figure, aes(x = nameFactor, y = value)) +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  geom_point(aes(shape=Groups), size=3) +
+  geom_line(aes(group = id), size=1) +
+  ylab("Averages") +
+  xlab("Cluster variables")+
+  ylim(-1.5, 1.5)
+```
+
+
+```{r}
+table(data$ClusterWard)
+table(data$ClusteringK_MEANS)
+table(data$ClusterWard, data$ClusteringK_MEANS)
+```
+
+```{r}
+fit <- aov(cbind(Emot_z, IQ_z, Verb_z, Math_z) ~ as.factor(ClusteringK_MEANS), 
+              data = data)
+
+summary(fit)
+```
+
+
+```{r}
+aggregate(data$Age, by=list(data$ClusteringK_MEANS), 
+          FUN = "mean")
+
+fit <- aov(Age ~ as.factor(ClusteringK_MEANS), 
+           data = data)
+
+summary(fit)
+```
+
+```{r}
+chisq_results <- chisq.test(data$GenderFactor, as.factor(data$ClusteringK_MEANS))
+chisq_results
+
+addmargins(chisq_results$observed)
+round(chisq_results$expected, 2)
+
+round(chisq_results$res, 2)
+```
+
+```{r}
+aggregate(data$Economics, by=list(data$ClusteringK_MEANS), 
+          FUN = "mean")
+
+boxplot(data$Economics ~ as.factor(data$ClusteringK_MEANS))
+
+fit <- aov(Economics ~ as.factor(ClusteringK_MEANS),
+           data = data)
+
+summary(fit)
+```
+
+```{r}
+write.csv(data, file="/cloud/project/Lectures/L2/Olympiad2.csv", row.names = FALSE, fileEncoding = "UTF-8")
+```

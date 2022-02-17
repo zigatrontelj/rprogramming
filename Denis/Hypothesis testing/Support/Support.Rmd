@@ -1,0 +1,42 @@
+---
+title: "Test of distribution for given probabilities"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("car")
+library(car)
+#install.packages("formatR")
+library(formatR)
+#install.packages("pastecs")
+library(pastecs)
+#install.packages("psych")
+library(psych)
+```
+
+
+```{r}
+results <- chisq.test(x = c(255, 75, 156, 17, 123, 68, 55, 14, 34), 
+                      p = c(0.2836, 0.1433, 0.1130, 0.1109, 0.1061, 0.0815, 0.0581, 0.0561, 0.0474),
+                      correct = FALSE)
+
+results
+```
+```{r}
+parties <- c("SDS", "LMŠ", "SD", "SMC", "Levica", "NSi", "Stranka AB", "Desus", "SNS")
+```
+
+
+```{r}
+results_table <- data.frame(parties, results$observed, round(results$expected, 1), round(results$residuals, 2))
+colnames(results_table) <- c("Parties", "Observed", "Expected", "Std. residuals")
+results_table
+```
+

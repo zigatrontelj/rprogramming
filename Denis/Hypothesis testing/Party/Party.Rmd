@@ -1,0 +1,69 @@
+---
+title: "Non-parametric test (Dependent samples)"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("dplyr")
+library(dplyr)
+#install.packages("car")
+library(car)
+#install.packages("formatR")
+library(formatR)
+#install.packages("pastecs")
+library(pastecs)
+#install.packages("psych")
+library(psych)
+```
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L1/Party/Party.csv", header=TRUE, sep=";", dec=",")
+print(mydata)
+```
+Description:
+
+- ID: Person ID
+- Cannabis: The headaches (1 - weak to 7 - strong)
+- Alcohol: The headaches (1 - weak to 7 - strong)
+
+
+```{r}
+mydata$Difference <- mydata$Cannabis - mydata$Alcohol
+
+describe(mydata[, -1])
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(mydata, aes(x=Difference)) +
+  geom_histogram(binwidth = 1, color = "black") +
+  xlab("Differences")
+```
+
+```{r}
+shapiro.test(mydata$Difference)
+```
+
+```{r}
+library(ggpubr)
+ggqqplot(mydata$Difference)
+```
+
+
+
+
+### Nonparametric
+```{r}
+wilcox.test(mydata$Cannabis,  mydata$Alcohol,
+            paired = TRUE,
+            correct = FALSE,
+            exact = FALSE,
+            alternative = "two.sided")
+```
+

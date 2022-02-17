@@ -1,0 +1,80 @@
+---
+title: "Non-parametric test - difference in two locations"
+output:
+  html_document:
+#    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 120)
+#install.packages("car")
+library(car)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("reshape2")
+library(reshape2)
+```
+
+```{r}
+mydata <- read.table("/cloud/project/Lectures/L1/Grades/Grades.csv", header=TRUE, sep=";", dec=",")
+print(mydata)
+```
+
+```{r}
+str(mydata)
+```
+
+```{r}
+library(dplyr)
+
+mydata <- mydata %>%
+  mutate(Math_code = dplyr::recode(mydata$Math,
+    "Excl" = 5, "VeryGood" = 4, "Good" = 3, "Fair" = 2))
+
+mydata <- mydata %>%
+  mutate(English_code = dplyr::recode(mydata$English,
+    "Excl" = 5, "VeryGood" = 4, "Good" = 3, "Fair" = 2))
+
+print(mydata)
+```
+
+
+```{r}
+mydata$Difference <- mydata$Math_code - mydata$English_code
+
+table(mydata$Difference)
+```
+
+
+```{r}
+binom.test(x = 5, 
+           n = 8,
+           p = 0.5,
+           alternative = "two.sided")
+```
+
+
+```{r}
+wilcox.test(mydata$Math_points,  mydata$English_points,
+            paired = TRUE,
+            correct = FALSE,
+            exact = FALSE,
+            alternative = "two.sided")
+```
+
+```{r}
+pnorm(-1.402, lower.tail = TRUE) + pnorm(1.402, lower.tail = FALSE)
+```
+
+
+
+```{r}
+t.test(mydata$Math_points,  mydata$English_points,
+       paired = TRUE,
+       alternative = "two.sided")
+```
+
+```{r}
+pt(-1.618, df = 7, lower.tail = TRUE) + pt(1.618, df = 7, lower.tail = FALSE)
+```
+
